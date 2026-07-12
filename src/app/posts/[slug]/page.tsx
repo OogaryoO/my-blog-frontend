@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { ArrowLeft, Calendar } from "lucide-react";
+import { BlocksRenderer } from "@strapi/blocks-react-renderer";
 import { getPostBySlug, getPostSlugs, getStrapiMediaUrl } from "@/lib/api";
+import { blocksToPlainText } from "@/lib/blocks";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -25,8 +27,8 @@ export async function generateMetadata({
   const post = await safeGetPost(slug);
   if (!post) return { title: "Post not found" };
 
-  const { title, content } = post.attributes;
-  const description = plainText(content).slice(0, 160);
+  const { title, content } = post;
+  const description = blocksToPlainText(content, 160);
   return { title, description };
 }
 
@@ -35,9 +37,9 @@ export default async function PostPage({ params }: PageProps) {
   const post = await safeGetPost(slug);
   if (!post) notFound();
 
-  const { title, content, publishedAt, cover } = post.attributes;
-  const coverUrl = getStrapiMediaUrl(cover?.data?.attributes.url);
-  const coverAlt = cover?.data?.attributes.alternativeText ?? title;
+  const { title, content, publishedAt, cover } = post;
+  const coverUrl = getStrapiMediaUrl(cover?.url);
+  const coverAlt = cover?.alternativeText ?? title;
 
   return (
     <article className="mx-auto max-w-3xl px-4 pb-24 pt-10 sm:px-6 lg:px-8">
@@ -70,8 +72,8 @@ export default async function PostPage({ params }: PageProps) {
         </figure>
       ) : null}
 
-      <div className="mt-12 whitespace-pre-wrap font-serif text-lg leading-[1.8] tracking-[-0.005em] text-foreground/90 sm:text-xl sm:leading-[1.75]">
-        {content}
+      <div className="mt-12 space-y-6 font-serif text-lg leading-[1.8] tracking-[-0.005em] text-foreground/90 sm:text-xl sm:leading-[1.75]">
+        <BlocksRenderer content={content} />
       </div>
     </article>
   );
@@ -94,12 +96,3 @@ function formatDate(iso: string): string {
   });
 }
 
-function plainText(md: string): string {
-  return md
-    .replace(/```[\s\S]*?```/g, "")
-    .replace(/[#>*_`~\-]+/g, "")
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-    .replace(/\s+/g, " ")
-    .trim();
-}

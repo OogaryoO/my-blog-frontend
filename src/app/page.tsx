@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getPosts, getStrapiMediaUrl } from "@/lib/api";
+import { blocksToPlainText } from "@/lib/blocks";
 import type { Post } from "@/types/blog";
 
 export default async function HomePage() {
@@ -98,9 +99,9 @@ function PostsSection({ posts }: { posts: Post[] }) {
 }
 
 function PostCard({ post }: { post: Post }) {
-  const { title, slug, publishedAt, content, cover } = post.attributes;
-  const coverUrl = getStrapiMediaUrl(cover?.data?.attributes.url);
-  const excerpt = makeExcerpt(content);
+  const { title, slug, publishedAt, content, cover } = post;
+  const coverUrl = getStrapiMediaUrl(cover?.url);
+  const excerpt = blocksToPlainText(content, 180);
 
   return (
     <Link
@@ -113,7 +114,7 @@ function PostCard({ post }: { post: Post }) {
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={coverUrl}
-              alt={cover?.data?.attributes.alternativeText ?? title}
+              alt={cover?.alternativeText ?? title}
               className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
               loading="lazy"
             />
@@ -166,14 +167,3 @@ function formatDate(iso: string): string {
   });
 }
 
-function makeExcerpt(content: string, max = 180): string {
-  if (!content) return "";
-  const plain = content
-    .replace(/```[\s\S]*?```/g, "")
-    .replace(/[#>*_`~\-]+/g, "")
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-    .replace(/\s+/g, " ")
-    .trim();
-  return plain.length > max ? `${plain.slice(0, max).trimEnd()}…` : plain;
-}

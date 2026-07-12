@@ -65,7 +65,7 @@ export async function getPostSlugs(): Promise<string[]> {
       "pagination[pageSize]": 500,
     },
   });
-  return json.data.map((p) => p.attributes.slug);
+  return json.data.map((p) => p.slug);
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {

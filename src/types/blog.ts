@@ -1,25 +1,22 @@
-export interface StrapiImage {
-  data: {
-    attributes: {
-      url: string;
-      alternativeText?: string | null;
-      width?: number;
-      height?: number;
-    };
-  } | null;
-}
+import type { BlocksContent } from "@strapi/blocks-react-renderer";
 
-export interface PostAttributes {
-  title: string;
-  slug: string;
-  content: string;
-  publishedAt: string;
-  cover?: StrapiImage;
+export interface StrapiMedia {
+  id: number;
+  url: string;
+  alternativeText?: string | null;
+  width?: number;
+  height?: number;
+  name?: string;
 }
 
 export interface Post {
   id: number;
-  attributes: PostAttributes;
+  documentId: string;
+  title: string;
+  slug: string;
+  content: BlocksContent;
+  publishedAt: string;
+  cover?: StrapiMedia | null;
 }
 
 export interface StrapiMeta {
